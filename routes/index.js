@@ -1,29 +1,28 @@
 var express = require('express');
 const ProductModel = require('../models/Product');
-const CategoryModel = require('../models/Category');
 var router = express.Router();
-/* GET home page. */
-router.get('/', async (req, res) => {
-var products = await ProductModel.find({}).populate('category');
-res.send(products);
-})
+const ve = require('../middleware/verifyMiddleware')
+const jwt = require('jsonwebtoken');
 
+
+// get product detail
 router.get('/detail/:id', async (req, res) => {
   try {
     const id = req.params.id;
     const product = await ProductModel.findById(id).populate('category');
-
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    res.send( product); // Assuming your view is named 'detail' inside the 'product' folder
+    res.send( product); 
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-router.get('/productss', async (req, res) => {
+
+
+router.get('/productss',  async (req, res) => {
   const { page = 1, limit = 2 } = req.query;
 
   try {
@@ -51,6 +50,59 @@ router.get('/productss', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//delete product
+router.get('/delete/:id', async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    await ProductModel.findByIdAndDelete(productId);
+    console.log('Product deleted successfully!');
+    res.status(200).json({ success: true, message: 'Product deleted successfully' });
+  } catch (error) {
+    console.error('Failed to delete product. Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete product' });
+  }
+});
+
+router.post('/edit/:id', async (req, res) => {
+  try {
+    var id = req.params.id;
+    var pro = req.body;
+
+    await ProductModel.findByIdAndUpdate(id, pro);
+    res.status(200).send({"message":"edit success"});
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      let inputErrors = {};
+      for (let er in error.errors) {
+        inputErrors[er] = error.errors[er].message;
+      }
+      res.status(400).json(inputErrors);
+    } else {
+      console.error(error);
+      res.status(500).send('Internal Server Error' + error);
+    }
+  }
+});
+router.post('/add', async (req, res) => {
+  try {
+    const pro = req.body;
+    await ProductModel.create(pro);
+    res.status(200).send({"message":"Create success"});
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      let inputErrors = {};
+      for (let er in error.errors) {
+        inputErrors[er] = error.errors[er].message;
+      }
+      res.status(400).json(inputErrors);
+    } else {
+      console.error(error);
+      res.status(500).send('Internal Server Error' + error);
+    }
   }
 });
 module.exports = router;
