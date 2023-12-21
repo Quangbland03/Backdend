@@ -14,7 +14,6 @@ router.get('/', async function (req, res) {
 });
 router.get('/delete/:id', async (req, res) => {
   const catId = req.params.id;
-
   try {
     await CategoryModel.findByIdAndDelete(catId);
     res.status(200).json({ success: true, message: 'category deleted successfully' });

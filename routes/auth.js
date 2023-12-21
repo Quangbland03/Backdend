@@ -1,7 +1,6 @@
 const bcrypt = require('bcrypt');
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const ve = require('../middleware/verifyMiddleware')
 const AuthModel = require('../models/Auth');
 var router = express.Router();
 
@@ -52,6 +51,7 @@ router.post('/login', async (req, res) => {
         email: 'Email is incorrect',
       });
     }
+    
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -73,18 +73,30 @@ router.post('/login', async (req, res) => {
   }
 });
 
-
-
 //logout
 router.get('/logout', (req, res) => {
   res.json({ success: true, message: 'Logout successful' });
 });
 
 
-
+const verify = () => (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, "262003", (err, user) => {
+      if (err) {
+        return res.status(403).json({ message: "Token is not valid!" });
+      }
+      req.user = user;
+      next();
+    });
+  } else {
+    res.status(401).json({ message: "You are not authenticated!" });
+  }
+};
 
 //get user
-router.get('/getUser', ve('user'), async (req, res) => {
+router.get('/getUser', verify(), async (req, res) => {
   const userId = req.user.userId;
 console.log(userId)
  var user = await AuthModel.findById(userId )
