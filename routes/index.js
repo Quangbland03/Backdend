@@ -23,7 +23,7 @@ router.get('/detail/:id',async (req, res) => {
   }
 });
 
-router.get('/products', async (req, res) => {
+router.get('/products',ve('admin'), async (req, res) => {
   const {
     page = 1, limit = 4
   } = req.query;
