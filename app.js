@@ -37,6 +37,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 var mongoose = require("mongoose");
 var uri = "mongodb+srv://quangquang2003tp:01234991798@cluster0.kv9zyyu.mongodb.net/Web";
+mongoose.set('strictQuery', true);
 mongoose.connect(uri)
 .then(() => console.log ("Connect to DB succeed !"))
 .catch((err) => console.log (err));
@@ -54,5 +55,5 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-const port = process.env.PORT || 3001
+app.listen(process.env.PORT || 3001)
 module.exports = app;
