@@ -19,6 +19,7 @@ var OrderSchema = mongoose.Schema({
         type: String,
         required: [true, 'Product description is required'],
       },
+    
 });
 var OrderModel = mongoose.model('orders', OrderSchema );
 module.exports =  OrderModel;
